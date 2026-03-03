@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For Dearest Mihika 💙</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Comic Sans MS', cursive;
+  text-align: center;
+  overflow-x: hidden;
+  background: linear-gradient(-45deg, #89f7fe, #66a6ff, #a1c4fd, #c2e9fb);
+  background-size: 400% 400%;
+  animation: dreamyOcean 12s ease infinite;
+}
+
+@keyframes dreamyOcean {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+h1 { margin-top:20px; color:white; }
+
+button {
+  padding: 12px 24px;
+  font-size: 18px;
+  border: none;
+  border-radius: 40px;
+  background: linear-gradient(45deg,#ff9a9e,#fad0c4);
+  color: white;
+  cursor: pointer;
+  margin: 10px;
+}
+
+canvas {
+  width: 90vw;
+  max-width: 320px;
+  background: rgba(255,255,255,0.4);
+  border-radius: 20px;
+}
+
+.scroll {
+  width: 90%;
+  max-width: 500px;
+  margin: auto;
+  padding: 20px;
+  background: #fff8dc;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+.scroll img {
+  width: 100%;
+  max-width: 300px;
+  border-radius: 15px;
+  margin-bottom: 15px;
+}
+
+#finalMessage {
+  display:none;
+  font-size:50px;
+  color:#ff4d6d;
+  margin-top:80px;
+  animation:pop 1s infinite alternate;
+}
+
+@keyframes pop {
+  from { transform:scale(1); }
+  to { transform:scale(1.15); }
+}
+
+.petal {
+  position:fixed;
+  top:-40px;
+  pointer-events:none;
+  animation:fall linear forwards;
+}
+
+@keyframes fall {
+  100% { transform:translateY(110vh) rotate(360deg); opacity:0; }
+}
+
+.confetti {
+  position:fixed;
+  width:10px;
+  height:10px;
+  top:50%;
+  left:50%;
+  pointer-events:none;
+  animation:explode 1.5s forwards;
+}
+
+@keyframes explode {
+  to {
+    transform:translate(var(--x),var(--y)) rotate(720deg);
+    opacity:0;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<h1>Dearest Mihika 💙</h1>
+<button onclick="startGame()">Start Penguin Game 🐧</button>
+
+<div id="gameSection" style="display:none;">
+<div id="score">Score: 0</div>
+<canvas id="gameCanvas" width="320" height="420"></canvas>
+
+<div>
+<button ontouchstart="moveLeft()">⬅️</button>
+<button ontouchstart="moveRight()">➡️</button>
+</div>
+
+<button id="revealBtn" onclick="revealScroll()" style="display:none;">
+💖 Best Sister Ever 💖
+</button>
+</div>
+
+<div id="scrollContainer" style="display:none; margin-top:20px;">
+<div class="scroll">
+<img src="sorry.jpg">
+<div id="typeText"></div>
+
+<div id="forgiveSection" style="display:none;">
+<h3>Maaf Kiya?....</h3>
+<button onclick="forgiveYes()">Yes 💖</button>
+<button id="noBtn" onclick="handleNoClick()">No 😢</button>
+</div>
+
+<div id="extraButtons"></div>
+</div>
+</div>
+
+<div id="finalMessage">
+Muchi🥰🥰❤️
+<br><br>
+<button id="downloadBtn" onclick="downloadScreenshot()" style="display:none;">
+Download Memory 📸
+</button>
+</div>
+
+<audio id="bgMusic" src="music.mp3" loop></audio>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+let canvas=document.getElementById("gameCanvas");
+let ctx=canvas.getContext("2d");
+let penguin={x:130,y:380,size:40,speed:4};
+let fishes=[],score=0,gameStarted=false;
+
+function drawPenguin(){
+ctx.font=penguin.size+"px Arial";
+ctx.fillText("🐧",penguin.x,penguin.y);
+}
+
+function createFish(){
+fishes.push({
+x:Math.random()*(canvas.width-30),
+y:-20,size:30,
+speed:2+Math.random()*2});
+}
+
+function update(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+fishes.forEach((fish,i)=>{
+fish.y+=fish.speed;
+if(fish.x<penguin.x+penguin.size &&
+fish.x+fish.size>penguin.x &&
+fish.y<penguin.y &&
+fish.y+fish.size>penguin.y-penguin.size){
+fishes.splice(i,1);
+score++;
+document.getElementById("score").innerText="Score: "+score;
+if(score>=10)
+document.getElementById("revealBtn").style.display="inline-block";
+}
+if(fish.y>canvas.height)fishes.splice(i,1);
+ctx.font="30px Arial";
+ctx.fillText("🐟",fish.x,fish.y);
+});
+drawPenguin();
+requestAnimationFrame(update);
+}
+
+function startGame(){
+document.getElementById("gameSection").style.display="block";
+if(!gameStarted){
+setInterval(createFish,900);
+update();
+enableTilt();
+gameStarted=true;
+}
+}
+
+document.addEventListener("keydown",e=>{
+if(e.key==="ArrowLeft")penguin.x-=penguin.speed*5;
+if(e.key==="ArrowRight")penguin.x+=penguin.speed*5;
+});
+
+function moveLeft(){penguin.x-=penguin.speed*6;}
+function moveRight(){penguin.x+=penguin.speed*6;}
+
+/* TILT CONTROL */
+function enableTilt(){
+if(window.DeviceOrientationEvent){
+window.addEventListener("deviceorientation",function(e){
+let tilt=e.gamma; 
+if(tilt>10)penguin.x+=penguin.speed;
+if(tilt<-10)penguin.x-=penguin.speed;
+});
+}
+}
+
+/* MESSAGE */
+const message=`I’m really sorry yaar 🥺
+
+I never wanted to hurt you, even by mistake.
+
+I feel really guilty for lying to you over something so silly.
+
+I know how much you hate dishonesty, and I messed up.
+
+Please maaf kar de yaar… it really means a lot to me 🥺💙`;
+
+function typeWriter(text,element){
+let i=0;
+function typing(){
+if(i<text.length){
+element.innerHTML+=text.charAt(i)==="\n"?"<br>":text.charAt(i);
+i++;
+setTimeout(typing,40);
+}else{
+document.getElementById("forgiveSection").style.display="block";
+}
+}
+typing();
+}
+
+function revealScroll(){
+document.getElementById("scrollContainer").style.display="block";
+document.getElementById("bgMusic").play();
+typeWriter(message,document.getElementById("typeText"));
+setInterval(createPetal,300);
+}
+
+function createPetal(){
+let flowers=["🌸","💮","🪷"];
+let petal=document.createElement("div");
+petal.className="petal";
+petal.innerText=flowers[Math.floor(Math.random()*3)];
+petal.style.left=Math.random()*window.innerWidth+"px";
+petal.style.fontSize=(20+Math.random()*20)+"px";
+petal.style.animationDuration=(5+Math.random()*5)+"s";
+document.body.appendChild(petal);
+setTimeout(()=>petal.remove(),10000);
+}
+
+let noClickCount=0;
+function handleNoClick(){
+noClickCount++;
+if(noClickCount===1)showPleaseImage();
+else runAway();
+}
+
+function showPleaseImage(){
+let img=document.createElement("img");
+img.src="pls.jpg";
+img.style.position="fixed";
+img.style.top="50%";
+img.style.left="50%";
+img.style.transform="translate(-50%,-50%)";
+img.style.width="80vw";
+img.style.maxWidth="500px";
+img.style.zIndex="9999";
+img.style.borderRadius="20px";
+img.style.boxShadow="0 0 40px rgba(0,0,0,0.5)";
+document.body.appendChild(img);
+setTimeout(()=>img.remove(),3000);
+}
+
+function runAway(){
+let btn=document.getElementById("noBtn");
+btn.style.position="fixed";
+btn.style.left=Math.random()*(window.innerWidth-100)+"px";
+btn.style.top=Math.random()*(window.innerHeight-50)+"px";
+}
+
+function forgiveYes(){
+document.getElementById("extraButtons").innerHTML=
+`<button onclick="pakka()">Pakka? 💞</button>`;
+}
+
+function pakka(){
+document.getElementById("extraButtons").innerHTML=
+`<button onclick="sachi()">Sachi? 🥺</button>`;
+}
+
+function sachi(){
+document.getElementById("scrollContainer").style.display="none";
+document.getElementById("finalMessage").style.display="block";
+document.getElementById("downloadBtn").style.display="inline-block";
+launchConfetti();
+}
+
+function launchConfetti(){
+for(let i=0;i<120;i++){
+let c=document.createElement("div");
+c.className="confetti";
+c.style.background=`hsl(${Math.random()*360},100%,60%)`;
+c.style.setProperty("--x",(Math.random()*600-300)+"px");
+c.style.setProperty("--y",(Math.random()*600-300)+"px");
+document.body.appendChild(c);
+setTimeout(()=>c.remove(),1500);
+}
+}
+
+function downloadScreenshot(){
+html2canvas(document.body).then(canvas=>{
+let link=document.createElement("a");
+link.download="Muchi-Memory.png";
+link.href=canvas.toDataURL();
+link.click();
+});
+}
+</script>
+
+</body>
+</html>
